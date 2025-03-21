@@ -46,17 +46,21 @@ function Game() {
         console.log(`Fetching exercise for grade: ${grade}`);
         const response = await fetch(`/api/exercise?gradeLevel=${grade}`);
         
-        if (!response.ok) {
-          throw new Error(`Failed to fetch exercise: ${response.statusText}`);
-        }
+        const responseText = await response.text();
+        console.log("Raw response:", responseText);
 
-        const data = await response.json();
-        console.log("Fetched exercise data:", data);
-        
-        if (data.exercise) {
-          setExercise(data.exercise);
-        } else {
-          setError("No exercise available");
+        try {
+          const data = JSON.parse(responseText);
+          console.log("Parsed JSON:", data);
+          
+          if (data.exercise) {
+            setExercise(data.exercise);
+          } else {
+            setError("No exercise available");
+          }
+        } catch (err) {
+          console.error("JSON Parsing Error:", err);
+          setError("Invalid response from server");
         }
       } catch (err) {
         console.error("Error fetching exercise:", err);
