@@ -46,6 +46,10 @@ function Game() {
         console.log(`Fetching exercise for grade: ${grade}`);
         const response = await fetch(`/api/exercise?gradeLevel=${grade}`);
         
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+        
         const responseText = await response.text();
         console.log("Raw response:", responseText);
 
