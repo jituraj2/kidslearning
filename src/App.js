@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from "react-router-dom";
 import { Howl } from 'howler';
 import Confetti from 'react-confetti';
@@ -33,17 +33,34 @@ function Home() {
 
 function Game() {
   const { grade } = useParams();
+  const [exercise, setExercise] = useState(null);
   const [answer, setAnswer] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
-  const correctAnswer = "A"; // Example question for all grades
+
+  useEffect(() => {
+    async function fetchExercise() {
+      try {
+        const response = await fetch(`/api/exercise?gradeLevel=${grade}`);
+        const data = await response.json();
+        if (data.exercise) {
+          setExercise(data.exercise);
+        }
+      } catch (error) {
+        console.error("Error fetching exercise:", error);
+      }
+    }
+    fetchExercise();
+  }, [grade]);
 
   const playSound = () => {
-    const sound = new Howl({ src: ["/audio/a.mp3"] });
-    sound.play();
+    if (exercise) {
+      const sound = new Howl({ src: [`/audio/${exercise.correct_letter}.mp3`] });
+      sound.play();
+    }
   };
 
   const checkAnswer = () => {
-    if (answer.toUpperCase() === correctAnswer) {
+    if (exercise && answer.toUpperCase() === exercise.correct_letter) {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
       alert("Correct! 🎉");
@@ -56,24 +73,30 @@ function Game() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
       {showConfetti && <Confetti />}
       <h1 className="text-3xl font-bold">{grade.toUpperCase()} KG Game 🎮</h1>
-      <p className="mt-4 text-xl">Drag and match the letter A!</p>
-      <Draggable>
-        <div className="p-4 bg-blue-300 rounded-full text-3xl cursor-pointer">A</div>
-      </Draggable>
-      <div className="border-2 border-gray-900 p-6 mt-4 text-xl font-bold">Drop A Here</div>
-      <button onClick={playSound} className="p-2 bg-yellow-400 rounded mt-2">🔊 Listen</button>
-      <input
-        type="text"
-        value={answer}
-        onChange={(e) => setAnswer(e.target.value)}
-        className="mt-2 p-2 border-2 border-gray-900"
-      />
-      <button
-        onClick={checkAnswer}
-        className="mt-4 p-3 bg-blue-500 text-white font-bold rounded"
-      >
-        Submit
-      </button>
+      {exercise ? (
+        <>
+          <p className="mt-4 text-xl">Drag and match the letter {exercise.correct_letter}!</p>
+          <Draggable>
+            <div className="p-4 bg-blue-300 rounded-full text-3xl cursor-pointer">{exercise.correct_letter}</div>
+          </Draggable>
+          <div className="border-2 border-gray-900 p-6 mt-4 text-xl font-bold">Drop {exercise.correct_letter} Here</div>
+          <button onClick={playSound} className="p-2 bg-yellow-400 rounded mt-2">🔊 Listen</button>
+          <input
+            type="text"
+            value={answer}
+            onChange={(e) => setAnswer(e.target.value)}
+            className="mt-2 p-2 border-2 border-gray-900"
+          />
+          <button
+            onClick={checkAnswer}
+            className="mt-4 p-3 bg-blue-500 text-white font-bold rounded"
+          >
+            Submit
+          </button>
+        </>
+      ) : (
+        <p>Loading exercise...</p>
+      )}
     </div>
   );
 }
