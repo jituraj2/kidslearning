@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from "react-router-dom";
-import { Howl } from 'howler';
-import Confetti from 'react-confetti';
-import Draggable from 'react-draggable';
+import { Howl } from "howler";
+import Confetti from "react-confetti";
+import Draggable from "react-draggable";
 
 const gradeButtons = [
   { name: "Mini KG", icon: "🐰", param: "mini", color: "#FFB5E8" },
@@ -44,14 +44,15 @@ function Game() {
       try {
         setLoading(true);
         console.log(`Fetching exercise for grade: ${grade}`);
-        const response = await fetch(`/api/exercise?gradeLevel=${grade}`);
         
+        const response = await fetch(`/api/exercise?gradeLevel=${grade}`);
+
         if (!response.ok) {
           throw new Error(`Server error: ${response.status}`);
         }
-        
+
         const responseText = await response.text();
-        console.log("Raw response:", responseText);
+        console.log("Raw response from API:", responseText);
 
         try {
           const data = JSON.parse(responseText);
@@ -60,11 +61,11 @@ function Game() {
           if (data.exercise) {
             setExercise(data.exercise);
           } else {
-            setError("No exercise available");
+            throw new Error("No exercise found.");
           }
-        } catch (err) {
-          console.error("JSON Parsing Error:", err);
-          setError("Invalid response from server");
+        } catch (jsonError) {
+          console.error("JSON Parsing Error:", jsonError);
+          throw new Error("Invalid JSON response from server.");
         }
       } catch (err) {
         console.error("Error fetching exercise:", err);
