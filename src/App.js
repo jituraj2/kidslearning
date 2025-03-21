@@ -36,17 +36,33 @@ function Game() {
   const [exercise, setExercise] = useState(null);
   const [answer, setAnswer] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     async function fetchExercise() {
       try {
+        setLoading(true);
+        console.log(`Fetching exercise for grade: ${grade}`);
         const response = await fetch(`/api/exercise?gradeLevel=${grade}`);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch exercise: ${response.statusText}`);
+        }
+
         const data = await response.json();
+        console.log("Fetched exercise data:", data);
+        
         if (data.exercise) {
           setExercise(data.exercise);
+        } else {
+          setError("No exercise available");
         }
-      } catch (error) {
-        console.error("Error fetching exercise:", error);
+      } catch (err) {
+        console.error("Error fetching exercise:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
     }
     fetchExercise();
@@ -73,7 +89,11 @@ function Game() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
       {showConfetti && <Confetti />}
       <h1 className="text-3xl font-bold">{grade.toUpperCase()} KG Game 🎮</h1>
-      {exercise ? (
+      {loading ? (
+        <p>Loading exercise...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : exercise ? (
         <>
           <p className="mt-4 text-xl">Drag and match the letter {exercise.correct_letter}!</p>
           <Draggable>
@@ -95,7 +115,7 @@ function Game() {
           </button>
         </>
       ) : (
-        <p>Loading exercise...</p>
+        <p>No exercise loaded.</p>
       )}
     </div>
   );
