@@ -17,5 +17,15 @@
     "howler": "^2.2.4",
     "react-confetti": "^6.1.0",
     "react-draggable": "^4.4.3"
-  }
+  },
+  "dependencies": {
+  "react": "^18.2.0",
+  "react-scripts": "^5.0.1",
+  "react-dom": "^18.2.0",
+  "react-router-dom": "^6.15.0",
+  "howler": "^2.2.4",
+  "react-confetti": "^6.1.0",
+  "react-draggable": "^4.4.3"
+}
+
 }
